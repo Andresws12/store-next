@@ -7,10 +7,7 @@ export default function Home() {
     <div className={styles.page}>
       <h1> Home </h1>
 
-      <Link href="/contac/test">
-        Go to contact test
-      </Link>
-
+      <Link href="/contac/test">Go to contact test</Link>
     </div>
   );
 }
