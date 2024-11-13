@@ -4,7 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 
 import localFont from "next/font/local";
-import "./globals.scss";
+import "@/styles/modifiers/globals.scss";
 
 import styles from "./layout.module.scss";
 
