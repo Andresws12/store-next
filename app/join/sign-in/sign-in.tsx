@@ -30,6 +30,8 @@ import { useAuth } from "@/hooks/use-auth";
 
 import { useRouter } from "next/navigation";
 
+import { apiPrefix } from "@/utils/const";
+
 const formSchema = z.object({
   email: z.string().email({
     message: "Por favor ingrese un correo electrónico válido.",
@@ -60,7 +62,9 @@ export default function SignIn() {
         identifier: values.email,
         password: values.password,
       };
-      const response = await fetch("http://localhost:1337/api/auth/local", {
+      const api = apiPrefix("/auth/local");
+
+      const response = await fetch(api, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

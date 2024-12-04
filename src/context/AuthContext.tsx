@@ -1,14 +1,23 @@
 "use client";
-import { log } from "console";
+
+import { Token } from "@/api/token";
+import { User } from "@/api/user";
+
+const tokenCtrl = new Token();
+const userCtrl = new User();
 import { useState, useEffect, createContext, ReactNode } from "react";
 
-export const AuthContext = createContext({
-  accessToken: null,
-  user: null,
-  login: async (token: any) => {},
-  logout: null,
-  updateUser: null,
-});
+interface AuthContextType {
+  accessToken: string | null;
+  user: object | null;
+  login: (token: string) => Promise<void>;
+  logout: () => void;
+  updateUser: (user: object) => void;
+}
+
+export const AuthContext = createContext<AuthContextType>(
+  {} as AuthContextType,
+);
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -16,18 +25,36 @@ interface AuthProviderProps {
 
 export function AuthProvider(props: AuthProviderProps) {
   const { children } = props;
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
+  const [user, setUser] = useState<object | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(false);
+    (async () => {
+      const token = tokenCtrl.getToken();
+      if (!token) {
+        logout();
+        setLoading(false);
+        return;
+      }
+
+      if (tokenCtrl.hasExpired(token)) {
+        logout();
+        setLoading(false);
+        return;
+      }
+
+      await login(token);
+    })();
   }, []);
 
-  const login = async (token) => {
+  const login = async (token: string) => {
     try {
+      tokenCtrl.setToken(token);
+      const user = await userCtrl.getMe();
+      setUser(user);
       setToken(token);
-      console.log(token);
+      setLoading(false);
     } catch (error) {
       console.log(error);
     } finally {
@@ -35,12 +62,22 @@ export function AuthProvider(props: AuthProviderProps) {
     }
   };
 
+  const logout = () => {
+    tokenCtrl.removeToken();
+    setUser(null);
+    setToken(null);
+  };
+
+  const updateUser = (user: object) => {
+    setUser(user);
+  };
+
   const data = {
     accessToken: token,
     user,
     login,
-    logout: null,
-    updateUser: null,
+    logout,
+    updateUser,
   };
 
   if (loading) return null;
